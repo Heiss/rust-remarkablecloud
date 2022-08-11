@@ -24,10 +24,8 @@ async fn website_handler(Extension(state): Extension<Arc<State>>) -> Html<String
 
 pub fn get_router() -> Router {
     Router::new()
-        .route("/", get(index_handler))
-        .route("/index.html", get(index_handler))
-        .route("/dist/*file", static_handler.into_service())
-        .fallback(get(not_found))
+        .route("/assets/*file", static_handler.into_service())
+        .fallback(get(index_handler))
 }
 
 // We use static route matchers ("/" and "/index.html") to serve our home
@@ -40,18 +38,9 @@ async fn index_handler() -> impl IntoResponse {
 // within our defined assets directory. This is the directory on our Asset
 // struct below, where folder = "examples/public/".
 async fn static_handler(uri: Uri) -> impl IntoResponse {
-    let mut path = uri.path().trim_start_matches('/').to_string();
-
-    if path.starts_with("dist/") {
-        path = path.replace("dist/", "");
-    }
+    let path = uri.path().trim_start_matches('/').to_string();
 
     StaticFile(path)
-}
-
-// Finally, we use a fallback route for anything that didn't match.
-async fn not_found() -> Html<&'static str> {
-    Html("<h1>404</h1><p>Not Found</p>")
 }
 
 #[derive(RustEmbed)]
@@ -66,6 +55,7 @@ where
 {
     fn into_response(self) -> Response {
         let path = self.0.into();
+        println!("file: {}", path);
 
         match Asset::get(path.as_str()) {
             Some(content) => {
