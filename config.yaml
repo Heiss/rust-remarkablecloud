@@ -1,0 +1,24 @@
+LOGLEVEL: info
+PORT: 8080
+# uncomment if using TLS
+#PORT: 443
+#TLS_KEY: /path/to/somekey
+#TLS_CERT: /path/to/somecert
+#RM_HTTPS_COOKIE: 1
+UI:
+  URL: http(s)://host.where.admin.rmfakecloud.is.running
+API:
+  #JWT_SECRET_KEY: SOME_KEY
+  SECRET_KEY: SOME_KEY
+  #STORAGE_URL: http(s)://host.where.rmfakecloud.is.running
+  URL: http(s)://host.where.rmfakecloud.is.running
+  DATADIR: /usr/local/lib/rmfakecloud
+  # Email
+  SMTP:
+    SERVER: smtp.gmail.com:465
+    USERNAME: MY_EMAIL_ADDRESS
+    PASSWORD: MY_PASSWORD
+  # Handwriting recognition
+  HWR:
+    APPLICATIONKEY: SOME_KEY
+    HMAC: SOME_KEY

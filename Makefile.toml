@@ -1,0 +1,38 @@
+[config]
+default_to_workspace = false
+
+[tasks.default]
+alias = "build"
+
+[tasks.build]
+dependencies = ["npm-build", "cargo-build"]
+
+[tasks.clean]
+dependencies = ["cargo-clean", "npm-clean"]
+
+[tasks.run]
+dependencies = ["cargo-run"]
+
+[tasks.cargo-run]
+command = "cargo"
+args = ["run"]
+
+[tasks.cargo-clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.cargo-build]
+command = "cargo"
+args = ["build"]
+
+[tasks.npm-clean]
+command = "npm"
+args = ["--prefix", "ui/", "run", "clean"]
+
+[tasks.npm-build]
+command = "npm"
+args = ["--prefix", "ui/", "run", "build"]
+
+[tasks.npm-dev]
+command = "npm"
+args = ["--prefix", "ui/", "run", "dev"]

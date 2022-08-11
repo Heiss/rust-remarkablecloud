@@ -1,0 +1,16 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = {version="0.5.15", features=["multipart", "json", "ws", "tower-log"]}
+tower = "0.4"
+tokio = { version = "1.20", features = ["full"] }
+# https://docs.rs/aliri_axum/latest/aliri_axum/index.html
+aliri_axum = "0.1.1"
+rust-embed = {version="6.4.0", features=["axum-ex"]}
+config = { path = "../config" }
+mime_guess = { version = "2" }
