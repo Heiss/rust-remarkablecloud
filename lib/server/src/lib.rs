@@ -45,7 +45,7 @@ pub async fn run(config: Config) {
         );
 
     let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
-    println!("listening on {}", addr);
+    println!("listening on http://{}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
