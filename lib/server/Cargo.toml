@@ -14,3 +14,6 @@ aliri_axum = "0.1.1"
 rust-embed = {version="6.4.0", features=["axum-ex"]}
 config = { path = "../config" }
 mime_guess = { version = "2" }
+tower-http = { version = "0.3.0", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
