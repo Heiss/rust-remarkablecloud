@@ -1,5 +1,5 @@
 # LOGLEVEL: debug
-LOGLEVEL: server=debug,tower_http=warn
+LOGLEVEL: server=debug,tower_http=debug
 PORT: 8080
 # uncomment if using TLS
 #PORT: 443

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import TheWelcome from "@/components/TheWelcome.vue";
+import HelloWorld from "~/components/HelloWorld.vue";
 </script>
 
 <template>
   <main>
-    <TheWelcome />
+    <img alt="Vue logo" class="element-plus-logo" src="./assets/logo.png" />
+    <HelloWorld msg="Toot toot" />
   </main>
 </template>

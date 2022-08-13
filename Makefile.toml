@@ -10,8 +10,8 @@ dependencies = ["npm-build", "cargo-build"]
 [tasks.clean]
 dependencies = ["cargo-clean", "npm-clean"]
 
-[tasks.run]
-dependencies = ["cargo-run"]
+[tasks.dev]
+run_task ={ name = ["cargo-run", "npm-dev"], parallel = true }
 
 [tasks.cargo-run]
 command = "cargo"
