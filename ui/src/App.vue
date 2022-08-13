@@ -1,13 +1,23 @@
 <template>
-  <el-config-provider namespace="ep">
-    <BaseHeader />
-    <div style="display: flex">
-      <BaseSide />
-      <div>
-        <RouterView />
-      </div>
-    </div>
-  </el-config-provider>
+  <div class="common-layout">
+    <el-config-provider namespace="ep">
+      <el-container>
+        <el-header>
+          <BaseHeader />
+        </el-header>
+        <el-container>
+          <el-aside>
+            <BaseSide />
+          </el-aside>
+          <el-main>
+            <main>
+              <RouterView />
+            </main>
+          </el-main>
+        </el-container>
+      </el-container>
+    </el-config-provider>
+  </div>
 </template>
 
 <style>

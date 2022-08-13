@@ -18,9 +18,9 @@ members = [
 
 [dependencies]
 
-clap = { version = "3.2.16", features = ["derive"]}
 config = { path = "lib/config" }
 server = { path = "lib/server" }
+cli = { path = "lib/cli" }
 anyhow = "1.0.61"
 
 

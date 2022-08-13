@@ -1,23 +1,8 @@
-use clap::Parser;
+use cli::CLI;
 use rmcloud::ServerBuilder;
-use std::path::PathBuf;
-
-#[derive(Parser, Debug, Clone)]
-#[clap(author, version, about, long_about = None)]
-struct Args {
-    /// Sets a custom config file
-    #[clap(
-        short,
-        long,
-        value_parser,
-        value_name = "FILE",
-        default_value = "./config.yaml"
-    )]
-    config_path: PathBuf,
-}
 
 fn main() -> anyhow::Result<()> {
-    let args = Args::parse();
+    let args = CLI::parse_args()?;
 
     println!(
         r#"//////////////////////////////////////////////////////////////////////
