@@ -9,9 +9,13 @@ import "./assets/main.css";
 import axios from "axios";
 import VueAxios from "vue-axios";
 
+import ElementPlus from "element-plus";
+import "element-plus/dist/index.css";
+
 const app = createApp(App);
 
 app.use(createPinia());
+app.use(ElementPlus);
 app.use(VueAxios, axios);
 app.use(router);
 
