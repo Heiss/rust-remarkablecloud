@@ -18,6 +18,30 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import("../views/AboutView.vue"),
     },
+    {
+      path: "/files",
+      name: "files",
+      // route level code-splitting
+      // this generates a separate chunk (About.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import("../views/FileView.vue"),
+    },
+    {
+      path: "/profile",
+      name: "profile",
+      // route level code-splitting
+      // this generates a separate chunk (About.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import("../views/ProfileView.vue"),
+    },
+    {
+      path: "/users",
+      name: "users",
+      // route level code-splitting
+      // this generates a separate chunk (About.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import("../views/UserListView.vue"),
+    },
     { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFound },
   ],
 });

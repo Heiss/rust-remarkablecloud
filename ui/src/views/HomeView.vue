@@ -4,7 +4,7 @@ import HelloWorld from "~/components/HelloWorld.vue";
 
 <template>
   <main>
-    <img alt="Vue logo" class="element-plus-logo" src="./assets/logo.png" />
+    <img alt="Vue logo" class="element-plus-logo" src="../assets/logo.png" />
     <HelloWorld msg="Toot toot" />
   </main>
 </template>

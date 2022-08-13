@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "generate": "vite-ssg build",
-    "build": "run-p type-check build-only",
+    "build": "run-p typecheck build-only",
     "preview": "vite preview --port 4173",
     "build-only": "vite build",
     "typecheck": "vue-tsc --noEmit",
@@ -30,7 +30,7 @@
     "vite": "^2.9.9",
     "vite-ssg": "^0.20.0",
     "vue-tsc": "^0.34.16",
-    "@vitejs/plugin-vue": "^2.3.3",    
+    "@vitejs/plugin-vue": "^2.3.3",
     "@vitejs/plugin-vue-jsx": "^1.0.0",
     "@vue/eslint-config-prettier": "^7.0.0",
     "@vue/eslint-config-typescript": "^11.0.0",

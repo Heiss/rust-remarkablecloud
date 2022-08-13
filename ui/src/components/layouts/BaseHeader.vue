@@ -1,12 +1,24 @@
 <script lang="ts" setup>
-import { toggleDark } from '~/composables';
+import { toggleDark } from "~/composables";
 </script>
 
 <template>
   <el-menu class="el-menu-demo" mode="horizontal">
     <el-menu-item index="1"><RouterLink to="/">Home</RouterLink></el-menu-item>
-    <el-menu-item index="5"><RouterLink to="/about">About</RouterLink></el-menu-item>
-        
+    <el-menu-item index="5"
+      ><RouterLink to="/about">About</RouterLink></el-menu-item
+    >
+    <el-menu-item index="6"
+      ><RouterLink to="/files">Files</RouterLink></el-menu-item
+    >
+    <el-menu-item index="7"
+      ><RouterLink to="/profile">Profile</RouterLink></el-menu-item
+    >
+    <el-menu-item index="8"
+      ><RouterLink to="/users">Users</RouterLink></el-menu-item
+    >
+
+    <!--
     <el-sub-menu index="2">
       <template #title>Workspace</template>
       <el-menu-item index="2-1">item one</el-menu-item>
@@ -21,8 +33,12 @@ import { toggleDark } from '~/composables';
     </el-sub-menu>
     <el-menu-item index="3" disabled>Info</el-menu-item>
     <el-menu-item index="4">Orders</el-menu-item>
+      -->
     <el-menu-item h="full" @click="toggleDark()">
-      <button class="border-none w-full bg-transparent cursor-pointer" style="height: var(--ep-menu-item-height);">
+      <button
+        class="border-none w-full bg-transparent cursor-pointer"
+        style="height: var(--ep-menu-item-height)"
+      >
         <i inline-flex i="dark:ep-moon ep-sunny" />
       </button>
     </el-menu-item>
