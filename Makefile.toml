@@ -13,13 +13,20 @@ dependencies = ["cargo-clean", "npm-clean"]
 [tasks.dev]
 run_task ={ name = ["cargo-run", "npm-dev"], parallel = true }
 
+[tasks.install]
+run_task ={ name = ["cargo-install", "npm-install"], parallel = true }
+
 [tasks.cargo-run]
 command = "cargo"
-args = ["run"]
+args = ["watch", "-x", "run", "-w", "src", "-w", "lib", "-w", "Cargo.toml"]
 
 [tasks.cargo-clean]
 command = "cargo"
 args = ["clean"]
+
+[tasks.cargo-install]
+command = "cargo"
+args = ["check"]
 
 [tasks.cargo-build]
 command = "cargo"
@@ -28,6 +35,10 @@ args = ["build", "--release"]
 [tasks.npm-clean]
 command = "npm"
 args = ["--prefix", "ui/", "run", "clean"]
+
+[tasks.npm-install]
+command = "npm"
+args = ["--prefix", "ui/", "install"]
 
 [tasks.npm-build]
 command = "npm"
