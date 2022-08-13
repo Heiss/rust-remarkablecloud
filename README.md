@@ -12,9 +12,12 @@ This implementation is heavily inspired by the excellent work of [ddvk](https://
 
 ## Development
 
-It is very easy to get a dev environment. You need `npm`, `node`, `rustup`, `cargo`, `rust`. After this you can execute the following commands to get everything up and running.
+It is very easy to get a dev environment. You need `git`, `npm`, `node`, `rustup`, `cargo`, `rust`. After this you can execute the following commands to get everything up and running.
 
 ```bash
+git clone https://github.com/Heiss/rust-remarkablecloud.git
+cd rust-remarkablecloud
+
 cargo install cargo-make cargo-watch
 cargo make install
 cargo make dev
