@@ -23,7 +23,7 @@ args = ["clean"]
 
 [tasks.cargo-build]
 command = "cargo"
-args = ["build"]
+args = ["build", "--release"]
 
 [tasks.npm-clean]
 command = "npm"

@@ -1,12 +1,22 @@
 <script setup lang="ts">
+import axios from "axios";
+import { ref, onMounted } from "vue";
+
 defineProps<{
   msg: string;
 }>();
+
+const count = ref<string>("");
+onMounted(() => {
+  axios.get("/").then((res) => {
+    count.value = res.data;
+  });
+});
 </script>
 
 <template>
   <div class="greetings">
-    <h1 class="green">{{ msg }}</h1>
+    <h1 class="green">{{ msg }} {{ count }}</h1>
     <h3>
       You’ve successfully created a project with
       <a target="_blank" href="https://vitejs.dev/">Vite</a> +

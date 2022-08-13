@@ -7,6 +7,8 @@ use thiserror::Error;
 pub enum ApiError {
     #[error("error in api yaml config")]
     YamlError(#[from] YamlError),
+    #[error("API.URL must not contain protocol like http")]
+    UrlContainsProtocol,
 }
 
 /// Represents the config for API which communicates with the remarkable tablets
@@ -120,6 +122,10 @@ impl Api {
             .as_str()
             .ok_or_else(|| YamlError::WrongType("API.URL", "String"))?
             .to_string();
+
+        if url.contains("://") {
+            return Err(ApiError::UrlContainsProtocol);
+        }
 
         let secret_key = api
             .get("SECRET_KEY")

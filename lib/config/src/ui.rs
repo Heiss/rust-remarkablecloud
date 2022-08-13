@@ -8,6 +8,8 @@ use crate::YamlError;
 pub enum UiError {
     #[error("error in ui yaml config")]
     YamlError(#[from] YamlError),
+    #[error("UI.URL must not contain protocol like http")]
+    UrlContainsProtocol,
 }
 
 /// Represents all configs for admin UI
@@ -26,6 +28,10 @@ impl Ui {
             .as_str()
             .ok_or(YamlError::WrongType("UI.URL", "String"))?
             .to_string();
+
+        if url.contains("://") {
+            return Err(UiError::UrlContainsProtocol);
+        }
         Ok(Self { url })
     }
 }

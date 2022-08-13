@@ -25,6 +25,7 @@ async fn website_handler(Extension(state): Extension<Arc<State>>) -> Html<String
 pub fn get_router() -> Router {
     Router::new()
         .route("/assets/*file", static_handler.into_service())
+        .route("/api/*path", crate::api::api_handler.into_service())
         .fallback(get(index_handler))
 }
 
@@ -55,7 +56,7 @@ where
 {
     fn into_response(self) -> Response {
         let path = self.0.into();
-        println!("file: {}", path);
+        tracing::debug! {%path, "requested asset file"};
 
         match Asset::get(path.as_str()) {
             Some(content) => {

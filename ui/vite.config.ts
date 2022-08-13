@@ -12,4 +12,22 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  server: {
+    hmr: {
+      clientPort: 5173,
+    },
+    proxy: {
+      // with options
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+      // Proxying websockets or socket.io
+      "/socket.io": {
+        target: "ws://localhost:5173",
+        ws: true,
+      },
+    },
+  },
 });
