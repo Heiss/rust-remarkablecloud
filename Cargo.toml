@@ -6,7 +6,8 @@ authors = ["Peter Heiss <peter.heiss@uni-muenster.de>"]
 description = "rmcloud implements a \"complete as possible\" cloud for the remarkable tablet as an replacement for the official one's."
 readme = "README.md"
 license = "MIT"
-
+homepage = "https://github.com/Heiss/rust-remarkablecloud"
+repository = "https://github.com/Heiss/rust-remarkablecloud"
 
 [workspace]
 
@@ -23,5 +24,7 @@ server = { path = "lib/server" }
 storage = { path = "lib/storage" }
 cli = { path = "lib/cli" }
 anyhow = "1.0.61"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 

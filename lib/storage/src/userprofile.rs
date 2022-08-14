@@ -3,7 +3,6 @@ use serde_yaml::Value;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-
 pub enum UserProfileError {
     #[error("Missing key in userprofile. key: {0}")]
     MissingKey(&'static str),
@@ -18,18 +17,20 @@ pub enum UserProfileError {
 pub trait UserFile {
     fn new(email: EMail, password: String, is_admin: bool, sync15: bool) -> Self;
     fn to_yaml(&self) -> String;
+    fn to_json(&self) -> String;
     fn from_yaml(yaml: Value) -> Result<Self, UserProfileError>
     where
         Self: Sized;
 }
+
 pub trait UserLocalFile: UserFile {}
 
 #[derive(Debug)]
 pub struct UserProfile {
-    email: EMail,
-    password: String,
-    is_admin: bool,
-    sync15: bool,
+    pub email: EMail,
+    pub password: String,
+    pub is_admin: bool,
+    pub sync15: bool,
 }
 
 impl UserFile for UserProfile {
@@ -41,9 +42,17 @@ impl UserFile for UserProfile {
             sync15,
         }
     }
+
     fn to_yaml(&self) -> String {
         format!(
             "email: {}\npassword: {}\nis_admin: {}\nsync15: {}",
+            self.email.0, self.password, self.is_admin, self.sync15
+        )
+    }
+
+    fn to_json(&self) -> String {
+        format!(
+            "{{\"email\":{},\"password\":{},\"is_admin\":{},\"sync15\":{}}}",
             self.email.0, self.password, self.is_admin, self.sync15
         )
     }

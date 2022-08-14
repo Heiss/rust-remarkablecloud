@@ -9,7 +9,6 @@ use tower::{ServiceBuilder, ServiceExt};
 mod api;
 mod ui;
 use tower_http::trace::TraceLayer;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub struct State {
     api_requests: AtomicUsize,
@@ -19,13 +18,6 @@ pub struct State {
 #[tokio::main]
 pub async fn run(config: Config) {
     let config = Arc::new(config);
-
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::new(
-            config.loglevel.to_string(),
-        ))
-        .with(tracing_subscriber::fmt::layer())
-        .init();
 
     let config_req = config.clone();
 

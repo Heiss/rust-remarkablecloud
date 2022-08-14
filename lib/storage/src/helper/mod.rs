@@ -1,4 +1,5 @@
 mod email;
+mod jwt;
 
-pub use email::validate_email;
-pub use email::{EMail, EMailError};
+pub use self::jwt::create_jwt_from_userprofile;
+pub use email::{validate_email, EMail, EMailError};

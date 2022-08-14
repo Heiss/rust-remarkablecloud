@@ -22,6 +22,10 @@ pub enum LocalStorageError {
     UserProfileError(#[from] UserProfileError),
     #[error("EMail error occurred")]
     EMailError(#[from] EMailError),
+    #[error("Code was not valid")]
+    CodeNotValid,
+    #[error("Code already expired")]
+    CodeExpired,
 }
 
 pub trait UserStorage: Storage {
@@ -56,4 +60,13 @@ pub trait UserStorage: Storage {
     ) -> Result<(), LocalStorageError>
     where
         T: UserFile;
+}
+
+pub trait CodeStorage: Storage {
+    fn create(config_file: &PathBuf) -> Result<Self, LocalStorageError>
+    where
+        Self: Sized;
+
+    fn validate_code(&self, email: &EMail, code: &str) -> Result<(), LocalStorageError>;
+    fn create_code(&mut self, email: &EMail) -> Result<String, LocalStorageError>;
 }

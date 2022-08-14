@@ -1,7 +1,8 @@
 use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
-use storage::{EMail, EMailError, LocalStorageError, UserProfile, UserStorage};
+use storage::{CodeStorage, EMail, EMailError, LocalStorageError, UserProfile, UserStorage};
 use thiserror::Error;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[derive(Error, Debug)]
 pub enum CLIError {
@@ -73,10 +74,15 @@ enum UserCommands {
     },
     /// Delete the user with given email.
     Delete { email: String },
+    /// Generate a code to access.
+    Generate { email: String },
+    /// Validate a code.
+    Validate { email: String, code: String },
 }
 
-pub struct Storages<U: UserStorage> {
+pub struct Storages<U: UserStorage, C: CodeStorage> {
     user_storage: U,
+    code_storage: C,
 }
 #[derive(Error, Debug)]
 pub enum StoragesError {
@@ -84,25 +90,35 @@ pub enum StoragesError {
     LocalStorageError(#[from] LocalStorageError),
 }
 
-impl<U: UserStorage> Storages<U> {
+impl<U: UserStorage, C: CodeStorage> Storages<U, C> {
     pub fn create(config: &CliArgs) -> Result<Self, StoragesError> {
         let user_storage = U::create(&config.config_path)?;
-        Ok(Self { user_storage })
+        let code_storage = C::create(&config.config_path)?;
+        Ok(Self {
+            user_storage,
+            code_storage,
+        })
     }
 }
 
 pub struct CLI {}
 
 impl CLI {
-    pub fn parse_args<U: UserStorage>() -> Result<(CliArgs, Storages<U>), CLIError> {
+    pub fn parse_args<U: UserStorage, C: CodeStorage>(
+    ) -> Result<(CliArgs, Storages<U, C>), CLIError> {
         // TODO: Add here the workflow to add a new user (as admin)
         let args = CliArgs::parse();
 
-        let storages = Storages::create(&args)?;
+        tracing_subscriber::registry()
+            .with(tracing_subscriber::EnvFilter::new("debug"))
+            .with(tracing_subscriber::fmt::layer())
+            .init();
+
+        let mut storages = Storages::create(&args)?;
 
         if let Some(cmd) = &args.command {
             match cmd {
-                Commands::User(u) => u.parse(&storages)?,
+                Commands::User(u) => u.parse(&mut storages)?,
             }
             return Err(CLIError::CommandFound);
         }
@@ -113,7 +129,10 @@ impl CLI {
 }
 
 impl User {
-    fn parse<U: UserStorage>(&self, storages: &Storages<U>) -> Result<(), UserCommandsError> {
+    fn parse<U: UserStorage, C: CodeStorage>(
+        &self,
+        storages: &mut Storages<U, C>,
+    ) -> Result<(), UserCommandsError> {
         if let Some(v) = &self.command {
             match v {
                 UserCommands::Show { email } => self.show_user(&email, storages)?,
@@ -130,16 +149,18 @@ impl User {
                     sync15,
                 } => self.create_user(&email, &password, is_admin, sync15, storages)?,
                 UserCommands::Delete { email } => self.delete_user(email, storages)?,
+                UserCommands::Generate { email } => self.generate_code(email, storages)?,
+                UserCommands::Validate { email, code } => self.validate(email, code, storages)?,
             }
         };
 
         Ok(())
     }
 
-    fn show_user<U: UserStorage>(
+    fn show_user<U: UserStorage, C: CodeStorage>(
         &self,
         email: &str,
-        storages: &Storages<U>,
+        storages: &Storages<U, C>,
     ) -> Result<(), UserCommandsError> {
         let user = storages
             .user_storage
@@ -148,10 +169,10 @@ impl User {
         Ok(())
     }
 
-    fn delete_user<U: UserStorage>(
+    fn delete_user<U: UserStorage, C: CodeStorage>(
         &self,
         email: &str,
-        storages: &Storages<U>,
+        storages: &Storages<U, C>,
     ) -> Result<(), UserCommandsError> {
         storages
             .user_storage
@@ -159,13 +180,13 @@ impl User {
         Ok(())
     }
 
-    fn create_user<U: UserStorage>(
+    fn create_user<U: UserStorage, C: CodeStorage>(
         &self,
         email: &str,
         password: &str,
         is_admin: &bool,
         sync15: &bool,
-        storages: &Storages<U>,
+        storages: &Storages<U, C>,
     ) -> Result<(), UserCommandsError> {
         let _user = storages.user_storage.create_user::<UserProfile>(
             &EMail::create(email)?,
@@ -176,13 +197,13 @@ impl User {
         Ok(())
     }
 
-    fn edit_user<U: UserStorage>(
+    fn edit_user<U: UserStorage, C: CodeStorage>(
         &self,
         email: &str,
         password: &str,
         is_admin: &bool,
         sync15: &bool,
-        storages: &Storages<U>,
+        storages: &Storages<U, C>,
     ) -> Result<(), UserCommandsError> {
         let _user = storages.user_storage.edit_user::<UserProfile>(
             &EMail::create(email)?,
@@ -190,6 +211,43 @@ impl User {
             is_admin,
             sync15,
         )?;
+        Ok(())
+    }
+
+    fn generate_code<U: UserStorage, C: CodeStorage>(
+        &self,
+        email: &str,
+        storages: &mut Storages<U, C>,
+    ) -> Result<(), UserCommandsError> {
+        let code = storages.code_storage.create_code(&EMail::create(email)?)?;
+        println!("Code generated for id {}: {}", email, code);
+        Ok(())
+    }
+
+    fn validate<U: UserStorage, C: CodeStorage>(
+        &self,
+        email: &str,
+        code: &str,
+        storages: &mut Storages<U, C>,
+    ) -> Result<(), UserCommandsError> {
+        match storages
+            .code_storage
+            .validate_code(&EMail::create(email)?, code)
+        {
+            Err(LocalStorageError::CodeExpired) => {
+                println!("Code is already expired.");
+                Ok(())
+            }
+            Err(LocalStorageError::CodeNotValid) => {
+                println!("Code is not valid.");
+                Ok(())
+            }
+            Err(v) => Err(v),
+            Ok(v) => {
+                println!("Code is valid.");
+                Ok(v)
+            }
+        }?;
         Ok(())
     }
 }
