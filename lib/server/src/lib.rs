@@ -2,8 +2,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{body::Body, extract::Host, http::Request, routing::any, Extension, Router};
 use config::Config;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::{net::SocketAddr, sync::atomic::AtomicUsize};
+use storage::{CodeStorage, Storage, Storages, UserStorage};
 use tower::{ServiceBuilder, ServiceExt};
 
 mod api;
@@ -15,10 +16,14 @@ pub struct State {
     website_requests: AtomicUsize,
 }
 
-#[tokio::main]
-pub async fn run(config: Config) {
-    let config = Arc::new(config);
+pub struct ArcStorage<U: UserStorage, C: CodeStorage> {
+    user_storage: Mutex<U>,
+    code_storage: Mutex<C>,
+}
 
+#[tokio::main]
+pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Storages<U, C>) {
+    let config = Arc::new(config);
     let config_req = config.clone();
 
     let notfound_router = Router::new().fallback(any(handler_404));
@@ -26,6 +31,11 @@ pub async fn run(config: Config) {
     let state = Arc::new(State {
         website_requests: AtomicUsize::new(0),
         api_requests: AtomicUsize::new(0),
+    });
+
+    let storages = Arc::new(ArcStorage {
+        user_storage: Mutex::new(storages.user_storage),
+        code_storage: Mutex::new(storages.code_storage),
     });
 
     let app = Router::new()
@@ -45,7 +55,7 @@ pub async fn run(config: Config) {
             ServiceBuilder::new()
                 .layer(Extension(config.clone()))
                 .layer(Extension(state))
-                // `TraceLayer` is provided by tower-http so you have to add that as a dependency.
+                //.layer(Extension(storages))
                 // It provides good defaults but is also very customizable.
                 //
                 // See https://docs.rs/tower-http/0.1.1/tower_http/trace/index.html for more details.

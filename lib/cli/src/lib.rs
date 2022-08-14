@@ -1,6 +1,9 @@
 use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
-use storage::{CodeStorage, EMail, EMailError, LocalStorageError, UserProfile, UserStorage};
+use storage::{
+    CodeStorage, EMail, EMailError, LocalStorageError, Storages, StoragesError, UserProfile,
+    UserStorage,
+};
 use thiserror::Error;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -80,27 +83,6 @@ enum UserCommands {
     Validate { email: String, code: String },
 }
 
-pub struct Storages<U: UserStorage, C: CodeStorage> {
-    user_storage: U,
-    code_storage: C,
-}
-#[derive(Error, Debug)]
-pub enum StoragesError {
-    #[error("Error occurred in LocalStorage")]
-    LocalStorageError(#[from] LocalStorageError),
-}
-
-impl<U: UserStorage, C: CodeStorage> Storages<U, C> {
-    pub fn create(config: &CliArgs) -> Result<Self, StoragesError> {
-        let user_storage = U::create(&config.config_path)?;
-        let code_storage = C::create(&config.config_path)?;
-        Ok(Self {
-            user_storage,
-            code_storage,
-        })
-    }
-}
-
 pub struct CLI {}
 
 impl CLI {
@@ -114,7 +96,7 @@ impl CLI {
             .with(tracing_subscriber::fmt::layer())
             .init();
 
-        let mut storages = Storages::create(&args)?;
+        let mut storages = Storages::create(&args.config_path)?;
 
         if let Some(cmd) = &args.command {
             match cmd {

@@ -1,11 +1,11 @@
-use cli::{CLIError, CliArgs, Storages, CLI};
+use cli::{CLIError, CliArgs, CLI};
 use rmcloud::ServerBuilder;
-use storage::{CodeLocalStorage, UserLocalStorage};
+use storage::{CodeLocalStorage, Storages, UserLocalStorage};
 
 fn main() -> anyhow::Result<()> {
     // Here you can specify, which storage should be used.
     // TODO: the Storage should be handled by the config.yaml instead of this thingy here
-    let (args, _storages): (CliArgs, Storages<UserLocalStorage, CodeLocalStorage>) =
+    let (args, storages): (CliArgs, Storages<UserLocalStorage, CodeLocalStorage>) =
         match CLI::parse_args() {
             Ok(v) => v,
             Err(CLIError::CommandFound) => return Ok(()), // hide the error, if CLI process something successfully
@@ -32,7 +32,9 @@ fn main() -> anyhow::Result<()> {
 "#
     );
 
-    ServerBuilder::new(args.config_path).build()?.execute()?;
+    ServerBuilder::new(args.config_path, storages)
+        .build()?
+        .execute()?;
 
     Ok(())
 }

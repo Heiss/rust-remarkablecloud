@@ -1,4 +1,6 @@
+use chrono::{DateTime, FixedOffset, TimeZone};
 use chrono::{Duration, Utc};
+
 use config::read_config;
 use rand::Rng;
 use std::{
@@ -13,8 +15,46 @@ use crate::{CodeStorage, EMail, LocalStorageError, Storage};
 #[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq)]
 struct Code(String);
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq, PartialOrd)]
-struct ExpiresAt(String);
+#[derive(Debug, PartialEq, PartialOrd)]
+struct ExpiresAt(DateTime<Utc>);
+
+use serde::de::{self, Visitor};
+
+struct ExpiresAtVisitor;
+
+impl<'de> Visitor<'de> for ExpiresAtVisitor {
+    type Value = ExpiresAt;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("an string")
+    }
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(ExpiresAt(
+            v.parse::<DateTime<Utc>>()
+                .map_err(|v| de::Error::custom(format!("{:?}", v)))?,
+        ))
+    }
+}
+impl serde::Serialize for ExpiresAt {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.0.to_string().as_str())
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ExpiresAt {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_str(ExpiresAtVisitor)
+    }
+}
 
 pub struct CodeLocalStorage {
     file: PathBuf,
@@ -74,7 +114,7 @@ impl CodeStorage for CodeLocalStorage {
             .ok_or(LocalStorageError::CodeNotValid)?
             .1;
 
-        (*expires >= ExpiresAt(Utc::now().to_string()))
+        (*expires >= ExpiresAt(Utc::now()))
             .then(|| ())
             .ok_or(LocalStorageError::CodeExpired)
     }
@@ -94,7 +134,7 @@ impl CodeStorage for CodeLocalStorage {
 
         let code = code.join("").to_uppercase();
         let expiration = Utc::now() + Duration::hours(3);
-        let val = (Code(code.clone()), ExpiresAt(expiration.to_string()));
+        let val = (Code(code.clone()), ExpiresAt(expiration));
 
         self.codes
             .entry(email.0.to_string())
@@ -104,6 +144,31 @@ impl CodeStorage for CodeLocalStorage {
         self.store_codes()?;
 
         Ok(code)
+    }
+
+    fn clean_codes(&mut self) -> Result<(), LocalStorageError> {
+        self.codes.retain(|_, v| {
+            v.retain(|(_, expire)| *expire < ExpiresAt(Utc::now()));
+
+            v.len() > 0
+        });
+
+        self.store_codes()?;
+        Ok(())
+    }
+
+    fn remove_code(&mut self, email: &EMail, code: &str) -> Result<(), LocalStorageError> {
+        let codes = self
+            .codes
+            .entry(email.0.to_string())
+            .or_insert_with(|| vec![]);
+
+        codes.retain(|(iter_code, expire)| {
+            Code(code.to_string()) != *iter_code && *expire < ExpiresAt(Utc::now())
+        });
+
+        self.store_codes()?;
+        Ok(())
     }
 }
 
