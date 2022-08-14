@@ -11,7 +11,8 @@
 <script setup lang="ts">
 import { name, version } from "~/../package.json";
 import axios from "axios";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, UnwrapRef, Ref } from "vue";
+import { About } from "~/models";
 
 const aboutUi = {
   version,
@@ -19,10 +20,10 @@ const aboutUi = {
   software: ["npm", "vue", "element-plus"],
 };
 
-const aboutApi = ref({});
+const aboutApi: Ref<UnwrapRef<About | null>> = ref(null);
 onMounted(() => {
   axios.get("/about").then((res) => {
-    aboutApi.value = res.data;
+    aboutApi.value = About.fromJSON(res.data);
   });
 });
 </script>
