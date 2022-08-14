@@ -22,7 +22,7 @@ impl ServerBuilder {
     pub fn build(self) -> Result<Server> {
         println!("Creating server with the following arguments.\n{}\n", self);
         Ok(Server {
-            config: read_config(self.path)?,
+            config: read_config(&self.path)?,
         })
     }
 }

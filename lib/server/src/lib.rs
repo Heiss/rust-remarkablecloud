@@ -1,17 +1,14 @@
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{body::Body, extract::Host, http::Request, routing::any, Extension, Router};
-use axum::{body::Bytes, http::HeaderMap, response::Response};
 use config::Config;
 use std::sync::Arc;
-use std::time::Duration;
 use std::{net::SocketAddr, sync::atomic::AtomicUsize};
 use tower::{ServiceBuilder, ServiceExt};
 
 mod api;
 mod ui;
-use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
-use tracing::Span;
+use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub struct State {

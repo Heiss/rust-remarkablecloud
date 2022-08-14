@@ -13,7 +13,8 @@ API:
   SECRET_KEY: SOME_KEY
   #STORAGE_URL: http(s)://host.where.rmfakecloud.is.running
   URL: localhost:8080
-  DATADIR: /usr/local/lib/rmfakecloud
+  #DATADIR: /usr/local/lib/rmfakecloud
+  DATADIR: ./testdir
   # Email
   SMTP:
     SERVER: smtp.gmail.com:465

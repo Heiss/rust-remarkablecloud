@@ -20,6 +20,7 @@ members = [
 
 config = { path = "lib/config" }
 server = { path = "lib/server" }
+storage = { path = "lib/storage" }
 cli = { path = "lib/cli" }
 anyhow = "1.0.61"
 

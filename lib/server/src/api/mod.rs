@@ -1,6 +1,6 @@
 use crate::State;
 use axum::{
-    http::{request, StatusCode},
+    http::StatusCode,
     response::{Html, IntoResponse},
     routing::{any, get, post},
     Extension, Json, Router,
@@ -33,7 +33,7 @@ struct About<'a> {
 
 #[derive(Deserialize, Debug)]
 struct Login {
-    code: String,
+    _code: String,
 }
 
 async fn login_handler(Json(payload): Json<Login>) -> impl IntoResponse {

@@ -95,6 +95,6 @@ impl Default for Config {
     }
 }
 
-pub fn read_config(path: PathBuf) -> Result<Config, ConfigError> {
+pub fn read_config(path: &PathBuf) -> Result<Config, ConfigError> {
     Config::create(&std::fs::read_to_string(path)?)
 }
