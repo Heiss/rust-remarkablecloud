@@ -2,11 +2,11 @@
   <div class="common-layout">
     <el-config-provider namespace="ep">
       <el-container>
-        <el-header>
+        <el-header v-if="authenticated()">
           <BaseHeader />
         </el-header>
         <el-container>
-          <el-aside>
+          <el-aside v-if="authenticated()">
             <BaseSide />
           </el-aside>
           <el-main>
@@ -20,6 +20,11 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { useAuthStore } from "./stores";
+
+const authenticated = useAuthStore().authenticated;
+</script>
 <style>
 #app {
   text-align: center;
