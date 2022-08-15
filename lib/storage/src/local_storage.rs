@@ -28,7 +28,7 @@ pub enum LocalStorageError {
     CodeExpired,
 }
 
-pub trait UserStorage: Storage + Send + Sync {
+pub trait UserStorage: Storage + Send + Sync + 'static {
     fn create(config_file: &PathBuf) -> Result<Self, LocalStorageError>
     where
         Self: Sized;
@@ -62,7 +62,7 @@ pub trait UserStorage: Storage + Send + Sync {
         T: UserFile;
 }
 
-pub trait CodeStorage: Storage + Send + Sync {
+pub trait CodeStorage: Storage + Send + Sync + 'static {
     fn create(config_file: &PathBuf) -> Result<Self, LocalStorageError>
     where
         Self: Sized;

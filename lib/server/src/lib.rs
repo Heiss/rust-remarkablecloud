@@ -2,9 +2,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{body::Body, extract::Host, http::Request, routing::any, Extension, Router};
 use config::Config;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::{net::SocketAddr, sync::atomic::AtomicUsize};
-use storage::{CodeStorage, Storage, Storages, UserStorage};
+use storage::{CodeStorage, Storages, UserStorage};
 use tower::{ServiceBuilder, ServiceExt};
 
 mod api;
@@ -16,9 +16,10 @@ pub struct State {
     website_requests: AtomicUsize,
 }
 
+/// Helper structure to access storages without the need to wait another storage.
 pub struct ArcStorage<U: UserStorage, C: CodeStorage> {
-    user_storage: Mutex<U>,
-    code_storage: Mutex<C>,
+    user_storage: RwLock<U>,
+    code_storage: RwLock<C>,
 }
 
 #[tokio::main]
@@ -34,8 +35,8 @@ pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Stora
     });
 
     let storages = Arc::new(ArcStorage {
-        user_storage: Mutex::new(storages.user_storage),
-        code_storage: Mutex::new(storages.code_storage),
+        user_storage: RwLock::new(storages.user_storage),
+        code_storage: RwLock::new(storages.code_storage),
     });
 
     let app = Router::new()
@@ -55,7 +56,7 @@ pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Stora
             ServiceBuilder::new()
                 .layer(Extension(config.clone()))
                 .layer(Extension(state))
-                //.layer(Extension(storages))
+                .layer(Extension(storages))
                 // It provides good defaults but is also very customizable.
                 //
                 // See https://docs.rs/tower-http/0.1.1/tower_http/trace/index.html for more details.
