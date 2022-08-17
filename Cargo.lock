@@ -1156,17 +1156,22 @@ version = "0.1.0"
 dependencies = [
  "aliri_axum",
  "axum 0.5.15",
+ "chrono",
  "config",
+ "hmac",
+ "jwt",
  "mime_guess",
  "rust-embed",
  "serde",
  "serde_json",
+ "sha2 0.10.2",
  "storage",
  "tokio",
  "toml",
  "tower",
  "tower-http 0.3.4",
  "tracing",
+ "uuid",
 ]
 
 [[package]]
@@ -1283,16 +1288,12 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "config",
- "hmac",
- "jwt",
  "rand",
  "regex",
  "serde",
  "serde_yaml",
- "sha2 0.10.2",
  "thiserror",
  "tracing",
- "uuid",
 ]
 
 [[package]]

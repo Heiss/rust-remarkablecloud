@@ -8,7 +8,10 @@ use storage::{CodeStorage, UserStorage};
 use tower::{ServiceBuilder, ServiceExt};
 
 mod api;
+mod helper;
 mod ui;
+
+use helper::create_jwt_from_userprofile;
 use tower_http::trace::TraceLayer;
 
 pub struct State {

@@ -22,6 +22,9 @@ pub trait UserFile: Debug {
         Self: Sized;
     fn to_yaml(&self) -> String;
     fn to_json(&self) -> String;
+    fn using_sync15(&self) -> bool;
+    fn get_email(&self) -> String;
+    fn is_admin(&self) -> bool;
     fn from_yaml(yaml: Value) -> Result<Self, UserProfileError>
     where
         Self: Sized;
@@ -94,6 +97,18 @@ impl UserFile for UserProfile {
             is_admin,
             sync15,
         })
+    }
+
+    fn using_sync15(&self) -> bool {
+        self.sync15
+    }
+
+    fn get_email(&self) -> String {
+        self.email.0.clone()
+    }
+
+    fn is_admin(&self) -> bool {
+        self.is_admin
     }
 }
 impl UserLocalFile for UserProfile {}

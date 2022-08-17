@@ -20,3 +20,8 @@ serde = "1.0.143"
 toml = "0.5.9"
 tracing = "0.1"
 storage = { path = "../storage" }
+sha2 = "0.10.2"
+hmac = "0.12.1"
+uuid = {version="1.1.2", features = ["v4"]}
+chrono = "0.4.22"
+jwt = "0.16.0"

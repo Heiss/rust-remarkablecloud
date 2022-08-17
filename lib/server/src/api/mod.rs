@@ -1,4 +1,4 @@
-use crate::State;
+use crate::{helper::create_jwt_from_userprofile, State};
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
@@ -8,7 +8,7 @@ use axum::{
 use config::Config;
 use std::sync::{Arc, RwLock};
 use std::{sync::atomic::Ordering, vec};
-use storage::CodeStorage;
+use storage::{CodeStorage, EMail, UserStorage};
 
 pub async fn api_handler(
     Extension(state): Extension<Arc<State>>,
@@ -34,12 +34,42 @@ struct About<'a> {
 
 #[derive(Deserialize, Debug)]
 struct Login {
-    _code: String,
+    code: String,
+    email: String,
 }
 
-async fn login_handler(Json(payload): Json<Login>) -> impl IntoResponse {
+async fn login_handler(
+    Extension(code_storage): Extension<Arc<RwLock<dyn CodeStorage>>>,
+    Extension(user_storage): Extension<Arc<RwLock<dyn UserStorage>>>,
+    Json(payload): Json<Login>,
+    Extension(config): Extension<Arc<Config>>,
+) -> Result<impl IntoResponse, StatusCode> {
     tracing::debug! {?payload, "Got code for login exchange"};
-    (StatusCode::UNAUTHORIZED, "")
+    let email = match EMail::create(&payload.email) {
+        Ok(v) => v,
+        Err(_) => return Err(StatusCode::UNAUTHORIZED),
+    };
+
+    if code_storage
+        .read()
+        .unwrap()
+        .validate_code(&email, &payload.code)
+        .is_ok()
+    {
+        let jwt = create_jwt_from_userprofile(
+            config.as_ref(),
+            user_storage
+                .read()
+                .unwrap()
+                .get_user(&email)
+                .unwrap()
+                .as_ref(),
+        );
+        if let Ok(v) = serde_json::to_string(&jwt) {
+            return Ok(Json(jwt.to_string()));
+        }
+    }
+    Err(StatusCode::UNAUTHORIZED)
 }
 
 pub async fn about_handler(Extension(config): Extension<Arc<Config>>) -> Html<String> {
@@ -59,9 +89,7 @@ pub async fn about_handler(Extension(config): Extension<Arc<Config>>) -> Html<St
         }
     })
 }
-pub async fn health_handler(
-    Extension(storage): Extension<Arc<RwLock<dyn CodeStorage>>>,
-) -> Html<String> {
+pub async fn health_handler() -> Html<String> {
     tracing::debug! {"report health"}
     Html(format!("status: {}", "excellent"))
 }

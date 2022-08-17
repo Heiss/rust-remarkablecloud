@@ -29,7 +29,9 @@ pub enum LocalStorageError {
 }
 
 pub trait UserStorage: Storage + Send + Sync + 'static + std::fmt::Debug {
-    fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError>;
+    fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError>
+    where
+        Self: Sized;
     fn get_user(&self, email: &EMail) -> Result<Box<dyn UserFile>, LocalStorageError>;
     fn delete_user(&self, email: &EMail) -> Result<(), LocalStorageError>;
     fn create_user(
