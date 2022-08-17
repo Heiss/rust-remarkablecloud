@@ -6,6 +6,8 @@ import { ElMessage } from "element-plus";
 import { User } from "~/models";
 
 let user: User | null = null;
+let cron: NodeJS.Timer;
+
 const localUser = localStorage.getItem("user");
 if (localUser !== null) {
   user = User.fromJSON(localUser);
@@ -20,15 +22,17 @@ export const useAuthStore = defineStore({
     user,
     authenticated,
     returnUrl: "",
+    cron,
   }),
   actions: {
     authenticated() {
       return this.user !== null;
     },
-    login(code: string) {
+    login(code: string, email: string) {
       axios
         .post(`/login`, {
           code,
+          email,
         })
         .then((user) => {
           // update pinia state
@@ -36,7 +40,7 @@ export const useAuthStore = defineStore({
           // store user details and jwt in local storage to keep user logged in between page refreshes
           localStorage.setItem("user", user.data);
 
-          ElMessage.error("Your code was valid. You are logged in now.");
+          ElMessage.success("Your code was valid. You are logged in now.");
           // redirect to previous url or default to home page
           router.push(this.returnUrl || "/");
           return true;
@@ -50,6 +54,31 @@ export const useAuthStore = defineStore({
       this.user = null;
       localStorage.removeItem("user");
       router.push("/login");
+    },
+    check() {
+      axios
+        .post("/jwt")
+        .then((user) => {
+          if (user.data !== "") {
+            this.user = User.fromJSON(user.data);
+            localStorage.setItem("user", user.data);
+          }
+        })
+        .catch(() => {
+          ElMessage.error(
+            "Your login session is not valid anymore. Please login again."
+          );
+          clearInterval(this.cron);
+          this.logout();
+          return false;
+        });
+    },
+    start_check() {
+      this.check();
+      this.cron = setInterval(() => {
+        console.log("run");
+        this.check();
+      }, 5 * 60 * 1000);
     },
   },
 });

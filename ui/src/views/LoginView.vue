@@ -4,12 +4,13 @@ import { useAuthStore } from "~/stores/auth.store";
 
 const form = reactive({
   code: "",
+  mail: "",
 });
 let disabled: boolean = false;
 async function onSubmit() {
   disabled = true;
   const authStore = useAuthStore();
-  await authStore.login(form.code);
+  await authStore.login(form.code, form.mail);
   disabled = false;
 }
 </script>
@@ -29,6 +30,13 @@ async function onSubmit() {
             <el-alert type="info" show-icon :closable="true">
               <p>Code was given to you by your administrator.</p>
             </el-alert>
+            <el-form-item label="Your email address">
+              <el-input
+                placeholder="Enter here your email"
+                :disabled="disabled"
+                v-model="form.mail"
+              />
+            </el-form-item>
             <el-form-item label="Access code">
               <el-input
                 placeholder="Enter here your code"

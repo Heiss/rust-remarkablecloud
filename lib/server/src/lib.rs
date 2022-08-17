@@ -11,7 +11,6 @@ mod api;
 mod helper;
 mod ui;
 
-use helper::create_jwt_from_userprofile;
 use tower_http::trace::TraceLayer;
 
 pub struct State {
@@ -19,11 +18,15 @@ pub struct State {
     website_requests: AtomicUsize,
 }
 
+// taken from https://github.com/tokio-rs/axum/blob/main/examples/error-handling-and-dependency-injection/src/main.rs
+pub type StateUserStorage = Arc<RwLock<Box<dyn UserStorage>>>;
+pub type StateCodeStorage = Arc<RwLock<Box<dyn CodeStorage>>>;
+
 #[tokio::main]
-pub async fn run<U: UserStorage, C: CodeStorage>(
+pub async fn run(
     config: Config,
-    user_storage: Box<U>,
-    code_storage: Box<C>,
+    user_storage: Box<dyn UserStorage>,
+    code_storage: Box<dyn CodeStorage>,
 ) {
     let config = Arc::new(config);
     let config_req = config.clone();
@@ -35,8 +38,8 @@ pub async fn run<U: UserStorage, C: CodeStorage>(
         api_requests: AtomicUsize::new(0),
     });
 
-    let user_storage = Arc::new(RwLock::new(user_storage));
-    let code_storage = Arc::new(RwLock::new(code_storage));
+    let user_storage = Arc::new(RwLock::new(user_storage)) as StateUserStorage;
+    let code_storage = Arc::new(RwLock::new(code_storage)) as StateCodeStorage;
 
     let app = Router::new()
         .route(
@@ -62,6 +65,7 @@ pub async fn run<U: UserStorage, C: CodeStorage>(
                 // See https://docs.rs/tower-http/0.1.1/tower_http/trace/index.html for more details.
                 // More customization see https://github.com/tokio-rs/axum/blob/ac7037d28208403d6030a47fdd9b0ff9cf2a9009/examples/tracing-aka-logging/src/main.rs#L37
                 .layer(TraceLayer::new_for_http()),
+            //TODO missing jwt auth
         );
 
     let addr = SocketAddr::from(([127, 0, 0, 1], config.port));

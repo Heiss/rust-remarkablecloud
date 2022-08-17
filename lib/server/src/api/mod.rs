@@ -1,4 +1,4 @@
-use crate::{helper::create_jwt_from_userprofile, State};
+use crate::{helper::create_jwt_from_userprofile, State, StateCodeStorage, StateUserStorage};
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
@@ -38,11 +38,13 @@ struct Login {
     email: String,
 }
 
+// TODO add a "CODE FORGOTTEN" endpoint and link
+
 async fn login_handler(
-    Extension(code_storage): Extension<Arc<RwLock<dyn CodeStorage>>>,
-    Extension(user_storage): Extension<Arc<RwLock<dyn UserStorage>>>,
-    Json(payload): Json<Login>,
     Extension(config): Extension<Arc<Config>>,
+    user_storage: Extension<StateUserStorage>,
+    code_storage: Extension<StateCodeStorage>,
+    Json(payload): Json<Login>,
 ) -> Result<impl IntoResponse, StatusCode> {
     tracing::debug! {?payload, "Got code for login exchange"};
     let email = match EMail::create(&payload.email) {
@@ -50,25 +52,27 @@ async fn login_handler(
         Err(_) => return Err(StatusCode::UNAUTHORIZED),
     };
 
-    if code_storage
+    match code_storage
         .read()
         .unwrap()
         .validate_code(&email, &payload.code)
-        .is_ok()
     {
-        let jwt = create_jwt_from_userprofile(
-            config.as_ref(),
-            user_storage
-                .read()
-                .unwrap()
-                .get_user(&email)
-                .unwrap()
-                .as_ref(),
-        );
-        if let Ok(v) = serde_json::to_string(&jwt) {
-            return Ok(Json(jwt.to_string()));
+        Ok(_) => {
+            let jwt = create_jwt_from_userprofile(
+                config.as_ref(),
+                user_storage
+                    .read()
+                    .unwrap()
+                    .get_user(&email)
+                    .unwrap()
+                    .as_ref(),
+            );
+            if let Ok(v) = serde_json::to_string(&jwt) {
+                return Ok(Json(v));
+            }
         }
-    }
+        Err(v) => tracing::debug! {?v, "got error"},
+    };
     Err(StatusCode::UNAUTHORIZED)
 }
 
@@ -89,15 +93,21 @@ pub async fn about_handler(Extension(config): Extension<Arc<Config>>) -> Html<St
         }
     })
 }
+
 pub async fn health_handler() -> Html<String> {
     tracing::debug! {"report health"}
     Html(format!("status: {}", "excellent"))
+}
+
+pub async fn jwt_handler() -> impl IntoResponse {
+    StatusCode::UNAUTHORIZED
 }
 
 pub fn get_router() -> Router {
     Router::new()
         .route("/about", get(about_handler))
         .route("/login", post(login_handler))
+        .route("/jwt", post(jwt_handler))
         .route("/health", get(health_handler))
         .route("/", any(api_handler))
 }

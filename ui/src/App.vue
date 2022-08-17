@@ -24,6 +24,7 @@
 import { useAuthStore } from "./stores";
 
 const authenticated = useAuthStore().authenticated;
+useAuthStore().start_check();
 </script>
 <style>
 #app {
