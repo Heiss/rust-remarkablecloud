@@ -6,8 +6,9 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{local_storage::LocalStorageError, EMail, Storage, UserFile, UserStorage};
+use crate::{local_storage::LocalStorageError, EMail, Storage, UserFile, UserProfile, UserStorage};
 
+#[derive(Debug)]
 pub struct UserLocalStorage {
     dir: PathBuf,
 }
@@ -34,10 +35,7 @@ impl UserStorage for UserLocalStorage {
         Ok(Box::new(storage))
     }
 
-    fn get_user<T>(&self, email: &EMail) -> Result<T, LocalStorageError>
-    where
-        T: UserFile,
-    {
+    fn get_user(&self, email: &EMail) -> Result<Box<dyn UserFile>, LocalStorageError> {
         let userprofile = get_user_profile(self.dir.clone(), &email);
         tracing::debug! {?userprofile,"get user profile"};
 
@@ -46,22 +44,19 @@ impl UserStorage for UserLocalStorage {
         file.read_to_string(&mut contents)?;
 
         let val: Value = serde_yaml::from_str(&contents)?;
-        Ok(T::from_yaml(val)?)
+        Ok(Box::new(UserProfile::from_yaml(val)?))
     }
 
-    fn create_user<T>(
+    fn create_user(
         &self,
         email: &EMail,
         password: &str,
         is_admin: &bool,
         sync15: &bool,
-    ) -> Result<T, LocalStorageError>
-    where
-        T: UserFile,
-    {
+    ) -> Result<Box<dyn UserFile>, LocalStorageError> {
         tracing::debug! {?email,"Try to create new user"};
 
-        let user = T::new(email.clone(), password.to_string(), *is_admin, *sync15);
+        let user = UserProfile::new(email.clone(), password.to_string(), *is_admin, *sync15);
         let folder = get_user_folder(self.dir.clone(), &email);
 
         if !folder.exists() {
@@ -74,16 +69,13 @@ impl UserStorage for UserLocalStorage {
             let mut file = File::create(profile)?;
             file.write_all(user.to_yaml().as_bytes())?;
             println!("User created");
-            Ok(user)
+            Ok(Box::new(user))
         } else {
             Err(LocalStorageError::UserAlreadyExists)
         }
     }
 
-    fn delete_user<T>(&self, email: &EMail) -> Result<(), LocalStorageError>
-    where
-        T: UserFile,
-    {
+    fn delete_user(&self, email: &EMail) -> Result<(), LocalStorageError> {
         let folder = get_user_folder(self.dir.clone(), &email);
         tracing::debug! {?folder, "delete user"};
         remove_dir_all(folder)?;
@@ -91,20 +83,17 @@ impl UserStorage for UserLocalStorage {
         Ok(())
     }
 
-    fn edit_user<T>(
+    fn edit_user(
         &self,
         email: &EMail,
         password: &str,
         is_admin: &bool,
         sync15: &bool,
-    ) -> Result<(), LocalStorageError>
-    where
-        T: UserFile,
-    {
+    ) -> Result<(), LocalStorageError> {
         let userprofile = get_user_profile(self.dir.clone(), &email);
         tracing::debug! {?userprofile, "edit user"};
         remove_file(userprofile)?;
-        self.create_user::<T>(email, password, is_admin, sync15)?;
+        self.create_user(email, password, is_admin, sync15)?;
 
         println!("User edited");
         Ok(())

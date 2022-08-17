@@ -2,9 +2,9 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::{body::Body, extract::Host, http::Request, routing::any, Extension, Router};
 use config::Config;
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, RwLock};
 use std::{net::SocketAddr, sync::atomic::AtomicUsize};
-use storage::{CodeStorage, Storages, UserStorage};
+use storage::{CodeStorage, UserStorage};
 use tower::{ServiceBuilder, ServiceExt};
 
 mod api;
@@ -16,16 +16,12 @@ pub struct State {
     website_requests: AtomicUsize,
 }
 
-/// Helper structure to access storages without the need to wait another storage.
-pub struct ThreadStorage<U: UserStorage + ?Sized, C: CodeStorage + ?Sized> {
-    user_storage: RwLock<Box<U>>,
-    code_storage: RwLock<Box<C>>,
-}
-
-type SharedStorage = Arc<ThreadStorage<dyn UserStorage, dyn CodeStorage>>;
-
 #[tokio::main]
-pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Storages<U, C>) {
+pub async fn run<U: UserStorage, C: CodeStorage>(
+    config: Config,
+    user_storage: Box<U>,
+    code_storage: Box<C>,
+) {
     let config = Arc::new(config);
     let config_req = config.clone();
 
@@ -36,17 +32,15 @@ pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Stora
         api_requests: AtomicUsize::new(0),
     });
 
-    let storages: SharedStorage = Arc::new(ThreadStorage {
-        user_storage: RwLock::new(storages.user_storage),
-        code_storage: RwLock::new(storages.code_storage),
-    });
+    let user_storage = Arc::new(RwLock::new(user_storage));
+    let code_storage = Arc::new(RwLock::new(code_storage));
 
     let app = Router::new()
         .route(
             "/*path",
             any(|Host(hostname): Host, request: Request<Body>| async move {
                 if hostname.as_str() == config_req.api.url.as_str().to_string() {
-                    api::get_router::<U, C>().oneshot(request).await
+                    api::get_router().oneshot(request).await
                 } else if hostname.as_str() == config_req.ui.url.as_str().to_string() {
                     ui::get_router().oneshot(request).await
                 } else {
@@ -58,7 +52,8 @@ pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Stora
             ServiceBuilder::new()
                 .layer(Extension(config.clone()))
                 .layer(Extension(state))
-                .layer(Extension(storages))
+                .layer(Extension(user_storage))
+                .layer(Extension(code_storage))
                 // It provides good defaults but is also very customizable.
                 //
                 // See https://docs.rs/tower-http/0.1.1/tower_http/trace/index.html for more details.

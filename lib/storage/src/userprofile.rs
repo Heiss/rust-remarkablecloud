@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::{EMail, EMailError};
 use serde_yaml::Value;
 use thiserror::Error;
@@ -14,8 +16,10 @@ pub enum UserProfileError {
     EMailError(#[from] EMailError),
 }
 
-pub trait UserFile {
-    fn new(email: EMail, password: String, is_admin: bool, sync15: bool) -> Self;
+pub trait UserFile: Debug {
+    fn new(email: EMail, password: String, is_admin: bool, sync15: bool) -> Self
+    where
+        Self: Sized;
     fn to_yaml(&self) -> String;
     fn to_json(&self) -> String;
     fn from_yaml(yaml: Value) -> Result<Self, UserProfileError>

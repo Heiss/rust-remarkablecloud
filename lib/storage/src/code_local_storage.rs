@@ -1,4 +1,4 @@
-use chrono::{DateTime, FixedOffset, TimeZone};
+use chrono::DateTime;
 use chrono::{Duration, Utc};
 
 use config::read_config;
@@ -55,7 +55,7 @@ impl<'de> serde::Deserialize<'de> for ExpiresAt {
         deserializer.deserialize_str(ExpiresAtVisitor)
     }
 }
-
+#[derive(Debug)]
 pub struct CodeLocalStorage {
     file: PathBuf,
     codes: BTreeMap<String, Vec<(Code, ExpiresAt)>>,
@@ -116,7 +116,7 @@ impl CodeStorage for CodeLocalStorage {
             .ok_or(LocalStorageError::CodeExpired)
     }
 
-    fn create_code(&mut self, email: &crate::EMail) -> Result<String, LocalStorageError> {
+    fn create_code(&mut self, email: &crate::EMail) -> Result<Box<String>, LocalStorageError> {
         const CODE_SIZE: usize = 8;
         let runes = "abcdefghijklmnopqrstuvwxyz".to_string();
         let mut rng = rand::thread_rng();
@@ -140,7 +140,7 @@ impl CodeStorage for CodeLocalStorage {
 
         self.store_codes()?;
 
-        Ok(code)
+        Ok(Box::new(code))
     }
 
     fn clean_codes(&mut self) -> Result<(), LocalStorageError> {

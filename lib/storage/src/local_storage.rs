@@ -28,42 +28,33 @@ pub enum LocalStorageError {
     CodeExpired,
 }
 
-pub trait UserStorage: Storage + Send + Sync + 'static {
+pub trait UserStorage: Storage + Send + Sync + 'static + std::fmt::Debug {
     fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError>;
-
-    fn get_user<T>(&self, email: &EMail) -> Result<T, LocalStorageError>
-    where
-        T: UserFile;
-
-    fn delete_user<T>(&self, email: &EMail) -> Result<(), LocalStorageError>
-    where
-        T: UserFile;
-
-    fn create_user<T>(
+    fn get_user(&self, email: &EMail) -> Result<Box<dyn UserFile>, LocalStorageError>;
+    fn delete_user(&self, email: &EMail) -> Result<(), LocalStorageError>;
+    fn create_user(
         &self,
         email: &EMail,
         password: &str,
         is_admin: &bool,
         sync15: &bool,
-    ) -> Result<T, LocalStorageError>
-    where
-        T: UserFile;
+    ) -> Result<Box<dyn UserFile>, LocalStorageError>;
 
-    fn edit_user<T>(
+    fn edit_user(
         &self,
         email: &EMail,
         password: &str,
         is_admin: &bool,
         sync15: &bool,
-    ) -> Result<(), LocalStorageError>
-    where
-        T: UserFile;
+    ) -> Result<(), LocalStorageError>;
 }
 
-pub trait CodeStorage: Storage + Send + Sync + 'static {
-    fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError>;
+pub trait CodeStorage: Storage + Send + Sync + 'static + std::fmt::Debug {
+    fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError>
+    where
+        Self: Sized;
     fn validate_code(&self, email: &EMail, code: &str) -> Result<(), LocalStorageError>;
-    fn create_code(&mut self, email: &EMail) -> Result<String, LocalStorageError>;
+    fn create_code(&mut self, email: &EMail) -> Result<Box<String>, LocalStorageError>;
     fn remove_code(&mut self, email: &EMail, code: &str) -> Result<(), LocalStorageError>;
     fn clean_codes(&mut self) -> Result<(), LocalStorageError>;
 }
