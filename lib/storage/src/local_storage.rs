@@ -29,9 +29,7 @@ pub enum LocalStorageError {
 }
 
 pub trait UserStorage: Storage + Send + Sync + 'static {
-    fn create(config_file: &PathBuf) -> Result<Self, LocalStorageError>
-    where
-        Self: Sized;
+    fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError>;
 
     fn get_user<T>(&self, email: &EMail) -> Result<T, LocalStorageError>
     where
@@ -63,10 +61,7 @@ pub trait UserStorage: Storage + Send + Sync + 'static {
 }
 
 pub trait CodeStorage: Storage + Send + Sync + 'static {
-    fn create(config_file: &PathBuf) -> Result<Self, LocalStorageError>
-    where
-        Self: Sized;
-
+    fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError>;
     fn validate_code(&self, email: &EMail, code: &str) -> Result<(), LocalStorageError>;
     fn create_code(&mut self, email: &EMail) -> Result<String, LocalStorageError>;
     fn remove_code(&mut self, email: &EMail, code: &str) -> Result<(), LocalStorageError>;

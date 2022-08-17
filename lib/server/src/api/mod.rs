@@ -1,4 +1,4 @@
-use crate::State;
+use crate::{SharedStorage, State, ThreadStorage};
 use axum::{
     http::StatusCode,
     response::{Html, IntoResponse},
@@ -8,6 +8,7 @@ use axum::{
 use config::Config;
 use std::sync::Arc;
 use std::{sync::atomic::Ordering, vec};
+use storage::{CodeLocalStorage, CodeStorage, UserLocalStorage, UserStorage};
 
 pub async fn api_handler(
     Extension(state): Extension<Arc<State>>,
@@ -58,10 +59,15 @@ pub async fn about_handler(Extension(config): Extension<Arc<Config>>) -> Html<St
         }
     })
 }
+pub fn health_handler(Extension(storage): Extension<SharedStorage>) -> Html<String> {
+    tracing::debug! {"report health"}
+    Html(format!("status: {}", "excellent"))
+}
 
-pub fn get_router() -> Router {
+pub fn get_router<U: UserStorage, C: CodeStorage>() -> Router {
     Router::new()
         .route("/about", get(about_handler))
         .route("/login", post(login_handler))
+        .route("/health", get(health_handler))
         .route("/", any(api_handler))
 }

@@ -24,17 +24,14 @@ fn get_user_profile(dir: PathBuf, email: &EMail) -> PathBuf {
 
 impl Storage for UserLocalStorage {}
 impl UserStorage for UserLocalStorage {
-    fn create(config_file: &PathBuf) -> Result<Self, LocalStorageError>
-    where
-        Self: Sized,
-    {
+    fn create(config_file: &PathBuf) -> Result<Box<Self>, LocalStorageError> {
         let config = read_config(config_file)?;
 
         let storage = UserLocalStorage {
             dir: PathBuf::from(config.api.data_dir),
         };
 
-        Ok(storage)
+        Ok(Box::new(storage))
     }
 
     fn get_user<T>(&self, email: &EMail) -> Result<T, LocalStorageError>

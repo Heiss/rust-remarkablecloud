@@ -8,8 +8,8 @@ pub trait Storage {}
 
 #[derive(Debug)]
 pub struct Storages<U: UserStorage, C: CodeStorage> {
-    pub user_storage: U,
-    pub code_storage: C,
+    pub user_storage: Box<U>,
+    pub code_storage: Box<C>,
 }
 
 #[derive(Error, Debug)]

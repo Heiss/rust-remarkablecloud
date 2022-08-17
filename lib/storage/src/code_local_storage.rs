@@ -78,10 +78,7 @@ impl CodeLocalStorage {
 
 impl Storage for CodeLocalStorage {}
 impl CodeStorage for CodeLocalStorage {
-    fn create(config_file: &std::path::PathBuf) -> Result<Self, crate::LocalStorageError>
-    where
-        Self: Sized,
-    {
+    fn create(config_file: &std::path::PathBuf) -> Result<Box<Self>, crate::LocalStorageError> {
         let config = read_config(config_file)?;
 
         let mut file = PathBuf::from(config.api.data_dir);
@@ -97,7 +94,7 @@ impl CodeStorage for CodeLocalStorage {
             codes,
         };
 
-        Ok(storage)
+        Ok(Box::new(storage))
     }
 
     fn validate_code(&self, email: &EMail, validate_code: &str) -> Result<(), LocalStorageError> {

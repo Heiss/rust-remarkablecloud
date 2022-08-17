@@ -17,10 +17,12 @@ pub struct State {
 }
 
 /// Helper structure to access storages without the need to wait another storage.
-pub struct ArcStorage<U: UserStorage, C: CodeStorage> {
-    user_storage: RwLock<U>,
-    code_storage: RwLock<C>,
+pub struct ThreadStorage<U: UserStorage + ?Sized, C: CodeStorage + ?Sized> {
+    user_storage: RwLock<Box<U>>,
+    code_storage: RwLock<Box<C>>,
 }
+
+type SharedStorage = Arc<ThreadStorage<dyn UserStorage, dyn CodeStorage>>;
 
 #[tokio::main]
 pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Storages<U, C>) {
@@ -34,7 +36,7 @@ pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Stora
         api_requests: AtomicUsize::new(0),
     });
 
-    let storages = Arc::new(ArcStorage {
+    let storages: SharedStorage = Arc::new(ThreadStorage {
         user_storage: RwLock::new(storages.user_storage),
         code_storage: RwLock::new(storages.code_storage),
     });
@@ -44,7 +46,7 @@ pub async fn run<U: UserStorage, C: CodeStorage>(config: Config, storages: Stora
             "/*path",
             any(|Host(hostname): Host, request: Request<Body>| async move {
                 if hostname.as_str() == config_req.api.url.as_str().to_string() {
-                    api::get_router().oneshot(request).await
+                    api::get_router::<U, C>().oneshot(request).await
                 } else if hostname.as_str() == config_req.ui.url.as_str().to_string() {
                     ui::get_router().oneshot(request).await
                 } else {
