@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "swellaby.rust-pack",
+        "esbenp.prettier-vscode",
+        "misterj.vue-volar-extention-pack",
+        "ms-vscode.vscode-typescript-next"
+    ]
+}
