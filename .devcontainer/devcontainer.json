@@ -29,8 +29,8 @@
 				"swellaby.rust-pack",
 				"esbenp.prettier-vscode",
 				"MisterJ.vue-volar-extention-pack",
- 				"rust-lang.rust-analyzer",
-				"ms-azuretools.vscode-docker"
+				"rust-lang.rust-analyzer",
+				"ms-vscode.vscode-typescript-next"
 			]
 		}
 	},
