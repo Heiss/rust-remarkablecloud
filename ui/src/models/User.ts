@@ -21,7 +21,7 @@ class User {
   }
 
   static fromJSON(serialized: string): User {
-    let user: ReturnType<User["toObject"]> = JSON.parse(serialized);
+    let user: User = JSON.parse(serialized);
 
     return new User(user.jwt);
   }

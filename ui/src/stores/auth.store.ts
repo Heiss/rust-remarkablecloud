@@ -38,7 +38,9 @@ export const useAuthStore = defineStore({
           // update pinia state
           this.user = User.fromJSON(user.data);
           // store user details and jwt in local storage to keep user logged in between page refreshes
-          localStorage.setItem("user", user.data);
+          console.log(this.user);
+
+          localStorage.setItem("user", this.user.serialize());
 
           ElMessage.success("Your code was valid. You are logged in now.");
           // redirect to previous url or default to home page
@@ -57,17 +59,17 @@ export const useAuthStore = defineStore({
     },
     check() {
       axios
-        .post("/jwt")
+        .post("/jwt", { jwt: this.user?.jwt })
         .then((user) => {
-          if (user.data !== "") {
-            this.user = User.fromJSON(user.data);
-            localStorage.setItem("user", user.data);
-          }
+          this.user = User.fromJSON(user.data);
+          localStorage.setItem("user", this.user.serialize());
         })
         .catch(() => {
-          ElMessage.error(
-            "Your login session is not valid anymore. Please login again."
-          );
+          if (this.user != null) {
+            ElMessage.error(
+              "Your login session is not valid anymore. Please login again."
+            );
+          }
           clearInterval(this.cron);
           this.logout();
           return false;
