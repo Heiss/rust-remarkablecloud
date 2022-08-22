@@ -11,10 +11,14 @@ dependencies = ["npm-build", "cargo-build"]
 dependencies = ["cargo-clean", "npm-clean"]
 
 [tasks.dev]
-run_task ={ name = ["cargo-run", "npm-dev"], parallel = true }
+run_task = { name = ["cargo-run", "npm-dev"], parallel = true }
 
 [tasks.install]
-run_task ={ name = ["cargo-install", "npm-install"], parallel = true }
+run_task = { name = [
+    "cargo-install",
+    "npm-install",
+    "mkdir -p ui/dist",
+], parallel = true }
 
 [tasks.cargo-run]
 command = "cargo"
