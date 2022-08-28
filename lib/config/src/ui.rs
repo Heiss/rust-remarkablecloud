@@ -1,13 +1,13 @@
-use serde_yaml::Value;
 use std::env;
 use thiserror::Error;
+use toml::Value;
 
-use crate::YamlError;
+use crate::TomlError;
 
 #[derive(Error, Debug)]
 pub enum UiError {
     #[error("error in ui yaml config")]
-    YamlError(#[from] YamlError),
+    YamlError(#[from] TomlError),
     #[error("UI.URL must not contain protocol like http")]
     UrlContainsProtocol,
 }
@@ -21,12 +21,12 @@ pub struct Ui {
 impl Ui {
     /// Creates the UI config struct and checks for required and optional fields
     pub fn create(yaml: &Value) -> Result<Self, UiError> {
-        let ui_config = yaml.get("UI").ok_or(YamlError::KeyNotFound("UI.URL"))?;
+        let ui_config = yaml.get("UI").ok_or(TomlError::KeyNotFound("UI.URL"))?;
         let url = ui_config
             .get("URL")
-            .ok_or(YamlError::KeyNotFound("UI.URL"))?
+            .ok_or(TomlError::KeyNotFound("UI.URL"))?
             .as_str()
-            .ok_or(YamlError::WrongType("UI.URL", "String"))?
+            .ok_or(TomlError::WrongType("UI.URL", "String"))?
             .to_string();
 
         if url.contains("://") {

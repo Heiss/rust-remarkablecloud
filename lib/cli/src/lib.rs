@@ -35,7 +35,7 @@ pub struct CliArgs {
         long,
         value_parser,
         value_name = "FILE",
-        default_value = "./config.yaml"
+        default_value = "./config.toml"
     )]
     pub config_path: PathBuf,
 

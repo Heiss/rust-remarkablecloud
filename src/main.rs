@@ -4,7 +4,7 @@ use storage::{CodeLocalStorage, UserLocalStorage};
 
 fn main() -> anyhow::Result<()> {
     // Here you can specify, which storage should be used.
-    // TODO: the Storage should be handled by the config.yaml instead of this thingy here
+    // TODO: the Storage should be handled by the config.toml instead of this thingy here
     let (args, user_storage, code_storage): (
         CliArgs,
         Box<UserLocalStorage>,

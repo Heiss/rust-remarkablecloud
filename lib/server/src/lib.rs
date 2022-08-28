@@ -68,7 +68,7 @@ pub async fn run(
             //TODO missing jwt auth
         );
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
+    let addr = SocketAddr::from(([127, 0, 0, 1], config.common.port));
     println!("listening on http://{}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

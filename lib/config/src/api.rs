@@ -1,12 +1,12 @@
-use crate::YamlError;
-use serde_yaml::Value;
+use crate::TomlError;
 use std::env;
 use thiserror::Error;
+use toml::Value;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
     #[error("error in api yaml config")]
-    YamlError(#[from] YamlError),
+    YamlError(#[from] TomlError),
     #[error("API.URL must not contain protocol like http")]
     UrlContainsProtocol,
 }
@@ -40,20 +40,20 @@ impl HWR {
     fn create(yaml: &Value) -> Result<Self, ApiError> {
         let hwr = yaml
             .get("HWR")
-            .ok_or_else(|| YamlError::KeyNotFound("API.HWR"))?;
+            .ok_or_else(|| TomlError::KeyNotFound("API.HWR"))?;
 
         let app_key = hwr
             .get("APPLICATIONKEY")
-            .ok_or_else(|| YamlError::KeyNotFound("API.HWR.APPLICATIONKEY"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.HWR.APPLICATIONKEY"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.HWR.APPLICATIONKEY", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.HWR.APPLICATIONKEY", "String"))?
             .to_string();
 
         let hmac = hwr
             .get("HMAC")
-            .ok_or_else(|| YamlError::KeyNotFound("API.HWR.HMAC"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.HWR.HMAC"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.HWR.HMAC", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.HWR.HMAC", "String"))?
             .to_string();
 
         Ok(Self { app_key, hmac })
@@ -64,27 +64,27 @@ impl SMTP {
     fn create(yaml: &Value) -> Result<Self, ApiError> {
         let smtp = yaml
             .get("SMTP")
-            .ok_or_else(|| YamlError::KeyNotFound("API.SMTP"))?;
+            .ok_or_else(|| TomlError::KeyNotFound("API.SMTP"))?;
 
         let server = smtp
             .get("SERVER")
-            .ok_or_else(|| YamlError::KeyNotFound("API.SMTP.SERVER"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.SMTP.SERVER"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.SMTP.SERVER", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.SMTP.SERVER", "String"))?
             .to_string();
 
         let username = smtp
             .get("USERNAME")
-            .ok_or_else(|| YamlError::KeyNotFound("API.SMTP.USERNAME"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.SMTP.USERNAME"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.SMTP.USERNAME", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.SMTP.USERNAME", "String"))?
             .to_string();
 
         let password = smtp
             .get("PASSWORD")
-            .ok_or_else(|| YamlError::KeyNotFound("API.SMTP.PASSWORD"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.SMTP.PASSWORD"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.SMTP.PASSWORD", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.SMTP.PASSWORD", "String"))?
             .to_string();
 
         Ok(Self {
@@ -114,13 +114,13 @@ impl Api {
     pub fn create(yaml: &Value) -> Result<Self, ApiError> {
         let api = yaml
             .get("API")
-            .ok_or_else(|| YamlError::KeyNotFound("API.API"))?;
+            .ok_or_else(|| TomlError::KeyNotFound("API.API"))?;
 
         let url = api
             .get("URL")
-            .ok_or_else(|| YamlError::KeyNotFound("API.URL"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.URL"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.URL", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.URL", "String"))?
             .to_string();
 
         if url.contains("://") {
@@ -129,25 +129,25 @@ impl Api {
 
         let secret_key = api
             .get("SECRET_KEY")
-            .ok_or_else(|| YamlError::KeyNotFound("API.SECRET_KEY"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.SECRET_KEY"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.SECRET_KEY", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.SECRET_KEY", "String"))?
             .to_string();
 
         let data_dir = api
             .get("DATADIR")
-            .ok_or_else(|| YamlError::KeyNotFound("API.DATADIR"))?
+            .ok_or_else(|| TomlError::KeyNotFound("API.DATADIR"))?
             .as_str()
-            .ok_or_else(|| YamlError::WrongType("API.DATADIR", "String"))?
+            .ok_or_else(|| TomlError::WrongType("API.DATADIR", "String"))?
             .to_string();
 
         let smtp = match SMTP::create(api) {
-            Err(ApiError::YamlError(YamlError::KeyNotFound("API.SMTP"))) => None,
+            Err(ApiError::YamlError(TomlError::KeyNotFound("API.SMTP"))) => None,
             v => Some(v?),
         };
 
         let hwr = match HWR::create(api) {
-            Err(ApiError::YamlError(YamlError::KeyNotFound("API.HWR"))) => None,
+            Err(ApiError::YamlError(TomlError::KeyNotFound("API.HWR"))) => None,
             v => Some(v?),
         };
 

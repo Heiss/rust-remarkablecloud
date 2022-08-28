@@ -123,7 +123,7 @@ pub async fn jwt_handler(
                 .unwrap()
                 .as_ref(),
         );
-        tracing::debug! {"JWT expired."}
+        tracing::debug! {"JWT expired. Generated a new one."}
     } else {
         jwt = payload.jwt;
         tracing::debug! {"JWT not expired. Send the old one back."}

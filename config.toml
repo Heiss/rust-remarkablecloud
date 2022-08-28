@@ -1,0 +1,20 @@
+[COMMON]
+LOGLEVEL = "debug"
+PORT = 8080
+
+[UI]
+URL = "host.where.admin.rmfakecloud.is.running"
+
+[API]
+SECRET_KEY = "SOME_KEY"
+URL = "localhost:8080"
+DATADIR = "./testdir"
+
+[API.SMTP]
+SERVER = "smtp.gmail.com:465"
+USERNAME = "MY_EMAIL_ADDRESS"
+PASSWORD = "MY_PASSWORD"
+
+[API.HWR]
+APPLICATIONKEY = "SOME_KEY"
+HMAC = "SOME_KEY"
