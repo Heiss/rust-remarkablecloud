@@ -49,7 +49,7 @@ impl Common {
             .try_into()
             .map_err(|e| {
                 println!("error in config while trying to read socketport: {:?}", e);
-                TomlError::WrongType("COMMON.wSOCKET", "Integer")
+                TomlError::WrongType("COMMON.SOCKET", "Integer")
             })?;
 
         Ok(Self {
