@@ -15,6 +15,7 @@ pub enum CommonError {
 pub struct Common {
     pub port: u16,
     pub loglevel: String,
+    pub socket: u16,
 }
 
 impl Common {
@@ -40,7 +41,22 @@ impl Common {
             .ok_or(TomlError::WrongType("COMMON.LOGLEVEL", "String"))?
             .to_string();
 
-        Ok(Self { port, loglevel })
+        let socket = common_config
+            .get("SOCKET")
+            .ok_or(TomlError::KeyNotFound("COMMON.SOCKET"))?
+            .as_integer()
+            .ok_or(TomlError::WrongType("COMMON.SOCKET", "Integer"))?
+            .try_into()
+            .map_err(|e| {
+                println!("error in config while trying to read socketport: {:?}", e);
+                TomlError::WrongType("COMMON.wSOCKET", "Integer")
+            })?;
+
+        Ok(Self {
+            port,
+            loglevel,
+            socket,
+        })
     }
 }
 
@@ -53,6 +69,10 @@ impl Default for Common {
                 .parse::<u16>()
                 .expect("PORT not valid number."),
             loglevel: env::var("LOGLEVEL").expect("LOGLEVEL not found in environment variables."),
+            socket: env::var("SOCKET_PORT")
+                .expect("SOCKET_PORT not found in environment variables.")
+                .parse::<u16>()
+                .expect("SOCKET_PORT not valid number."),
         }
     }
 }

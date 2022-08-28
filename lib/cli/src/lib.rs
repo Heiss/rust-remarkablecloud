@@ -1,5 +1,6 @@
 use clap::{Args, Parser, Subcommand};
-use std::path::PathBuf;
+use config::Config;
+use std::{io::Write, net::TcpStream, path::PathBuf};
 use storage::{CodeStorage, EMail, EMailError, LocalStorageError, StoragesError, UserStorage};
 use thiserror::Error;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -100,7 +101,22 @@ impl CLI {
 
         if let Some(cmd) = &args.command {
             match cmd {
-                Commands::User(u) => u.parse(user_storage.as_mut(), code_storage.as_mut())?,
+                Commands::User(u) => {
+                    u.parse(user_storage.as_mut(), code_storage.as_mut())?;
+                    let config = Config::create(
+                        &std::fs::read_to_string(&args.config_path)
+                            .expect("cannot read in config file."),
+                    )
+                    .expect("Cannot create config.");
+
+                    let mut stream =
+                        TcpStream::connect(format!("127.0.0.1:{}", config.common.socket))
+                            .expect("Cannot connect to cli socket.");
+
+                    stream
+                        .write("reload user 0".as_bytes())
+                        .expect("Cannot write to cli socket.");
+                }
             }
             return Err(CLIError::CommandFound);
         }

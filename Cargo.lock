@@ -373,6 +373,7 @@ name = "cli"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "config",
  "storage",
  "thiserror",
  "tracing",

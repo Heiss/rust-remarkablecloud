@@ -1,6 +1,7 @@
 [COMMON]
 LOGLEVEL = "debug"
 PORT = 8080
+SOCKET = 8888
 
 [UI]
 URL = "host.where.admin.rmfakecloud.is.running"

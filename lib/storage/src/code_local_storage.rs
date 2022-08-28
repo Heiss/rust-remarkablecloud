@@ -63,6 +63,7 @@ pub struct CodeLocalStorage {
 
 impl CodeLocalStorage {
     pub fn store_codes(&self) -> Result<(), LocalStorageError> {
+        // FIXME: This will overwrite changes, made by the server in the meantime of running the cli.
         tracing::debug! {?self.file,"store codes in file"};
         let yaml = serde_yaml::to_string(&self.codes)?;
 
@@ -73,6 +74,14 @@ impl CodeLocalStorage {
         file.write_all(yaml.as_bytes())?;
 
         Ok(())
+    }
+
+    fn load_codes(&mut self) -> Result<(), LocalStorageError> {
+        let mut file = File::open(&self.file)?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        let val = serde_yaml::from_str(&contents)?;
+        Ok(val)
     }
 }
 
@@ -98,6 +107,8 @@ impl CodeStorage for CodeLocalStorage {
     }
 
     fn validate_code(&self, email: &EMail, validate_code: &str) -> Result<(), LocalStorageError> {
+        // FIXME: If cli creates codes, the running server does not recognize it, because they are using two different code_storages.
+        // This is bad, because every new code needs a server restart.
         let validate_code = Code(validate_code.to_string());
         let codes = self
             .codes
@@ -160,9 +171,7 @@ impl CodeStorage for CodeLocalStorage {
             .entry(email.0.to_string())
             .or_insert_with(|| vec![]);
 
-        codes.retain(|(iter_code, expire)| {
-            Code(code.to_string()) != *iter_code && *expire < ExpiresAt(Utc::now())
-        });
+        codes.retain(|(iter_code, _expire)| Code(code.to_string()) != *iter_code);
 
         self.store_codes()?;
         Ok(())

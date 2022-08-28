@@ -64,12 +64,23 @@ async fn login_handler(
         }
     };
 
-    match code_storage
-        .read()
-        .unwrap()
-        .validate_code(&email, &payload.code)
-    {
+    let validation = {
+        code_storage
+            .read()
+            .unwrap()
+            .validate_code(&email, &payload.code)
+    };
+
+    match validation  {
         Ok(_) => {
+            tracing::debug! {"delete code from storage"};
+            code_storage
+                .write()
+                .unwrap()
+                .remove_code(&email, &payload.code)
+                .expect("cannot write to code storage");
+
+            tracing::debug! {"create jwt"};
             let jwt = create_jwt_from_userprofile(
                 config.as_ref(),
                 user_storage

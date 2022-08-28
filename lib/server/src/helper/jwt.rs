@@ -1,7 +1,7 @@
 use chrono::{Duration, Utc};
 use config::Config;
 use hmac::{Hmac, Mac};
-use jwt::{Claims, Error, SignWithKey, VerifyWithKey};
+use jwt::{SignWithKey, VerifyWithKey};
 use sha2::Sha256;
 use std::collections::BTreeMap;
 use storage::UserFile;
@@ -14,6 +14,9 @@ pub fn create_jwt_from_userprofile(config: &Config, user: &dyn UserFile) -> Stri
 
     if user.using_sync15() {
         scopes.push("sync15");
+    }
+    if user.is_admin() {
+        scopes.push("admin");
     }
 
     let expiration = Utc::now() + Duration::days(1);

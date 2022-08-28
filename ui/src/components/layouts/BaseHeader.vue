@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { toggleDark } from "~/composables";
+import { useAuthStore } from "~/stores";
 </script>
 
 <template>
@@ -14,7 +15,7 @@ import { toggleDark } from "~/composables";
     <el-menu-item index="7"
       ><RouterLink to="/profile">Profile</RouterLink></el-menu-item
     >
-    <el-menu-item index="8"
+    <el-menu-item index="8" v-if="useAuthStore().user?.isAdmin()"
       ><RouterLink to="/users">Users</RouterLink></el-menu-item
     >
 
@@ -34,6 +35,7 @@ import { toggleDark } from "~/composables";
     <el-menu-item index="3" disabled>Info</el-menu-item>
     <el-menu-item index="4">Orders</el-menu-item>
       -->
+
     <el-menu-item h="full" @click="toggleDark()">
       <button
         class="border-none w-full bg-transparent cursor-pointer"
@@ -42,5 +44,7 @@ import { toggleDark } from "~/composables";
         <i inline-flex i="dark:ep-moon ep-sunny" />
       </button>
     </el-menu-item>
+    <div class="flex-grow" />
+    <el-menu-item @click="useAuthStore().logout()">Logout</el-menu-item>
   </el-menu>
 </template>
