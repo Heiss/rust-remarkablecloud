@@ -62,8 +62,8 @@ pub async fn run(
             ServiceBuilder::new()
                 .layer(Extension(config.clone()))
                 .layer(Extension(state))
-                .layer(Extension(user_storage))
-                .layer(Extension(code_storage))
+                .layer(Extension(user_storage.clone()))
+                .layer(Extension(code_storage.clone()))
                 // See https://docs.rs/tower-http/0.1.1/tower_http/trace/index.html for more details.
                 // More customization see https://github.com/tokio-rs/axum/blob/ac7037d28208403d6030a47fdd9b0ff9cf2a9009/examples/tracing-aka-logging/src/main.rs#L37
                 .layer(TraceLayer::new_for_http()),
