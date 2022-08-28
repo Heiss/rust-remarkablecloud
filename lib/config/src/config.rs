@@ -1,5 +1,5 @@
 use crate::{Api, Common, Ui};
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 use thiserror::Error;
 use toml::Value;
 

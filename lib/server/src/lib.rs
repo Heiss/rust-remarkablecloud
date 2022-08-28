@@ -1,5 +1,4 @@
 use config::Config;
-use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
 use storage::{CodeStorage, UserStorage};
 
