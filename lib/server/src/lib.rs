@@ -1,5 +1,4 @@
 use config::Config;
-use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
 use storage::{CodeStorage, UserStorage};
 
@@ -29,8 +28,8 @@ pub async fn run(
 
     let handle = cli_socket::run_cli_socket(config.clone(), socket_rx).await;
     axum_server::run_server(config, axum_rx, user_storage, code_storage).await;
-    handle.await.unwrap();
+    handle.await.expect("Cannot join cli socket");
 
-    println!("Everything is closed gracefully. Bye.\n");
+    println!("Everything is closed gracefully. Bye.");
     Ok(())
 }

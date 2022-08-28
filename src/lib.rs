@@ -52,7 +52,7 @@ where
 
 impl<U: UserStorage, C: CodeStorage> Server<U, C> {
     pub fn execute(self) -> Result<()> {
-        server::run(self.config, self.user_storage, self.code_storage);
+        server::run(self.config, self.user_storage, self.code_storage)?;
         Ok(())
     }
 }

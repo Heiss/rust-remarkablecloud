@@ -12,7 +12,8 @@ pub fn create_receivers() -> (
         tokio::signal::ctrl_c()
             .await
             .expect("expect tokio signal ctrl-c");
-        print!("Signal exit...");
+
+        println!("Signal exit...");
         socket_tx
             .send(())
             .expect("Cannot send close command to cli socket.");
